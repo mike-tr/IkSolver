@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -63,7 +62,7 @@ public class IKSolver : MonoBehaviour
 
     // Update is called once per frame
     private void LateUpdate() {
-        // Stopwatch sw = new Stopwatch();
+        // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
         // sw.Start();
         // for (int i = 0; i < 10000; i++)
         // {
@@ -78,7 +77,7 @@ public class IKSolver : MonoBehaviour
     private void Solver(){
         if(target == null)
             return;
-        if(bones.Length - 1 != chainLength){
+        if(bonesLength.Length != chainLength){
             Init();
         }
 
@@ -100,9 +99,11 @@ public class IKSolver : MonoBehaviour
             //positions[chainLength] = target.position;
             for (int k = 0; k < iterations; k++)
             {
-                for (int i = 0; i < chainLength; i++){
-                    positions[i + 1] = Vector3.Lerp(positions[i + 1], 
-                        positions[i] + StartDir[i], snapBackStrength);
+                if(!pole){
+                    for (int i = 0; i < chainLength; i++){
+                        positions[i + 1] = Vector3.Lerp(positions[i + 1], 
+                            positions[i] + StartDir[i], snapBackStrength);
+                    }
                 }
 
                 positions[chainLength] = targetPos;
@@ -124,9 +125,17 @@ public class IKSolver : MonoBehaviour
         }
 
         if(pole){
+            var polePos = pole.position;
+            for (int i = chainLength - 1; i > 0; i--)
+            {
+                positions[i] = PlainCalculator.calculateClosestToRinPlaneABwD(positions[i - 1], positions[i+1], 
+                     positions[i], polePos);
+            }
+
             for (int i = 1; i < chainLength; i++)
             {
-                var dir = (positions[i - 1] - positions[i + 1]).normalized;     
+                positions[i] = PlainCalculator.calculateClosestToRinPlaneABwD(positions[i - 1], positions[i+1], 
+                     positions[i], polePos);
             }
         }
 
@@ -152,6 +161,27 @@ public class IKSolver : MonoBehaviour
     #if UNITY_EDITOR
     private void OnDrawGizmos() {
         var current = this.transform;
+        if(pole){
+            var positions = new Vector3[chainLength + 1];
+            current = this.transform;
+            
+            Random.InitState(10);
+            for (int i = 0; i < (chainLength + 1) && current != null && current.parent != null; i++)
+            {
+                positions[i] = current.position;
+                current = current.parent;
+                Gizmos.color = Color.HSVToRGB(Random.value ,1,1);
+                Gizmos.DrawSphere(positions[i], 0.25f);
+            }
+
+            for (int i = 1; i < chainLength; i++)
+            {
+                PlainCalculator.getClosestWithRespectVisualized(positions[i - 1], positions[i+1], 
+                    positions[i], pole.position, Vector3.zero);
+            }   
+        }
+
+        current = this.transform;
         for (int i = 0; i < chainLength && current != null && current.parent != null; i++){
             var scale = Vector3.Distance(current.position, current.parent.position) * 0.1f;
             Handles.matrix = Matrix4x4.TRS(current.position, Quaternion.FromToRotation(Vector3.up, 
