@@ -50,19 +50,8 @@ public class test : MonoBehaviour
  
          return limit1 + Mathf.Clamp01(t) * lineVector;
      }
-    private void OnDrawGizmos() {
-        Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(transform.position + o1, size);
-        Gizmos.DrawSphere(transform.position + o2, size);
 
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(transform.position + f, size);
-
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawSphere(transform.position + pole, size);
-
-        Handles.DrawLine(o1 + transform.position, o2 + transform.position);
-
+     private void v1(){
         Gizmos.color = Color.green;
         //var p = transform.position + calculate(o1, o2, f);
         // var p = ClosestPoint(o1, o2, f) + transform.position;
@@ -81,5 +70,26 @@ public class test : MonoBehaviour
 
         Gizmos.color = Color.black;
         Gizmos.DrawSphere(calculate(o1,o2,f, pole) + transform.position, size);
+     }
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawSphere(transform.position + o1, size);
+        Gizmos.DrawSphere(transform.position + o2, size);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(transform.position + f, size);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere(transform.position + pole, size);
+
+        Handles.DrawLine(o1 + transform.position, o2 + transform.position);
+
+        ///////////////////////
+        /////////
+        ////////////////
+
+        var target = PlainCalculator.getClosestWithRespectTo(o1, o2, f, pole, transform.position);
+        //Gizmos.color = Color.grey;
+        //Gizmos.DrawSphere(target + transform.position, size);
     }
 }
