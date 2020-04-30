@@ -5,7 +5,23 @@ public class Hinge2DIkSolver : MonoBehaviour
     public Transform target;
     public Transform Pole;
     public int chainLength = 2;
-    public float force = 1;
+    
+    public float SetForce = 75;
+    private float _force;
+    private float dforce;
+    public float force {
+        get {
+            if(SetForce != _force){
+                force = SetForce;
+            }
+            return _force;
+        }
+        set{
+            _force = value;
+            SetForce = value;
+            dforce = 1f / (value * value);
+        }
+    }
     public float delta = 0.25f;
     public int iterations = 10;
     
@@ -120,14 +136,33 @@ public class Hinge2DIkSolver : MonoBehaviour
 
 
             // var dir = (positions[i] - getBonePos(i));
-            var dd = (Vector2)root.position;
-            if(i != chainLength){
-                dd -= positions[i + 1];
+
+
+
+
+            // var dd = (Vector2)root.position;
+            // if(i != chainLength){
+            //     dd -= positions[i + 1];
+            // }else{
+            //     dd -= positions[i];
+            // }
+            // var ancor = bones[i].anchor.magnitude * dd.normalized;
+            // bonesR[i].MovePosition(positions[i] - ancor);
+
+           // bonesR[i].velocity *= 0.1f;
+            //dump = force / (dump + 1);
+
+            var dir = (positions[i] - getBonePos(i));
+            var mag = dir.magnitude;
+            var cmag = bonesR[i].velocity.magnitude;
+            if(cmag > force){
+                          bonesR[i].velocity *= 1f - (mag / cmag) * 0.9f;
             }else{
-                dd -= positions[i];
+                bonesR[i].velocity *= 0.1f;
             }
-            var ancor = bones[i].anchor.magnitude * dd.normalized;
-            bonesR[i].MovePosition(positions[i] - ancor);
+            var dump = (dir -  bonesR[i].velocity);
+            bonesR[i].AddForce(dir * force);
+
             //bonesR[i].MovePosition(bonesT[i].position);
         }
     }
@@ -142,9 +177,9 @@ public class Hinge2DIkSolver : MonoBehaviour
                 for (int i = 0; i < bones.Length; i++)
                 {
                     Gizmos.color = PlainCalculator.Next();
-                    Gizmos.DrawSphere(getBonePos(i) + Vector2.up * 5, 0.25f);
-                    Gizmos.color = Color.black;
-                    Gizmos.DrawSphere(BonePosToPos(i, getBonePos(i) + Vector2.up * 5), 0.25f);
+                    Gizmos.DrawSphere(getBonePos(i), 0.25f);
+                    //Gizmos.color = Color.black;
+                    //Gizmos.DrawSphere(BonePosToPos(i, getBonePos(i) + Vector2.up * 5), 0.25f);
                 }
 
                 float cl = 0;
@@ -162,22 +197,30 @@ public class Hinge2DIkSolver : MonoBehaviour
                     Gizmos.color = Color.green;
                     //Gizmos.DrawSphere(positions[i], 0.3f);
 
-                    Gizmos.color = Color.cyan;
+                    
 
-                    int v = i + 1;
-                    if(i == chainLength){
-                        v = i;
-                    }
-                    var dd = (Vector2)root.position - positions[v];
-                    var ancor = bones[i].anchor.magnitude * dd.normalized;
-                    Gizmos.DrawSphere(positions[i] - (Vector2)ancor, 0.15f);
+                    // int v = i + 1;
+                    // if(i == chainLength){
+                    //     v = i;
+                    // }
+                    // var dd = (Vector2)root.position - positions[v];
+                    // var ancor = bones[i].anchor.magnitude * dd.normalized;
+                    // Debug.Log(" i : " + i + " an : " + ancor.magnitude + " , " + dd + " , " + ancor);
+                    // Gizmos.color = Color.cyan;
+                    // Gizmos.DrawSphere(positions[i] - (Vector2)ancor, 0.15f);
 
 
                     Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere(bones[i].anchor + (Vector2)root.position, 0.25f);
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(dd.normalized + (Vector2)root.position, 0.25f);
-                    Debug.Log(chainLength + " , " + i);
+                    Gizmos.DrawSphere(positions[i], 0.25f);
+                    // Gizmos.color = Color.red;
+                    // Gizmos.DrawSphere(positions[i] - (Vector2)ancor, 0.2f);
+
+                    // if(i == 1){
+                    //     Gizmos.color = Color.magenta;
+                    //     Gizmos.DrawSphere(root.position + (Vector3)ancor, 0.15f);
+                    //     Gizmos.DrawSphere(positions[i + 1] + ancor, 0.25f);
+                    //     Debug.Log(" i : " + i + " an : " + ancor.magnitude + " , " + dd + " , " + ancor);
+                    // }
                 }
             }
         }catch{
