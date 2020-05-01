@@ -1,6 +1,9 @@
 {
      // The following will hide the js and map files in the editor
      "files.exclude": {
+        "omnisharp.useEditorFormattingSettings": true,
+        "editor.formatOnSave": true,
+
         "**/*.meta": true,
         "**/*.blend": true,
         "**/*.blend1": true,

@@ -88,7 +88,7 @@ public class test : MonoBehaviour
         /////////
         ////////////////
 
-        var target = PlainCalculator.getClosestWithRespectVisualized(o1, o2, f, pole, transform.position);
+        var target = PlainMath.GetClosestWithRespectVisualized(o1, o2, f, pole, transform.position);
 
         //var target2 = PlainCalculator.getClosestWithRespectVisualized(o1 + Vector3.up * 5, o2 + Vector3.up * 5, f + Vector3.up * 5, pole + Vector3.up * 5, transform.position);
         //PlainCalculator.getClosestWithRespectVisualized(o1 + transform.position, o2 + transform.position, f + transform.position, pole + transform.position, Vector3.up * 5);
