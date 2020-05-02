@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
 public class Hinge2DIkSolver : MonoBehaviour {
+    public static float reflectionForce = 1f;
     public Transform target;
     public Transform pole;
     public int chainLength = 2;
@@ -29,12 +30,14 @@ public class Hinge2DIkSolver : MonoBehaviour {
 
     private Vector2[] positions;
     private float[] bonesLength;
-    private HingeJoint2D[] bones;
+    private AnchoredJoint2D[] bones;
+
     private Rigidbody2D[] bonesR;
     private Transform[] bonesT;
     private Vector2[] StartDir;
     private float completeLength = 0;
     private Transform root;
+    private Rigidbody2D rootrb;
     // Start is called before the first frame update
     void Start () {
         init ();
@@ -42,13 +45,13 @@ public class Hinge2DIkSolver : MonoBehaviour {
 
     void init () {
         positions = new Vector2[chainLength + 1];
-        bones = new HingeJoint2D[chainLength + 1];
+        bones = new AnchoredJoint2D[chainLength + 1];
         bonesT = new Transform[chainLength + 1];
         bonesR = new Rigidbody2D[chainLength + 1];
         StartDir = new Vector2[chainLength + 1];
         bonesLength = new float[chainLength];
         completeLength = 0;
-        var current = GetComponent<HingeJoint2D> ();
+        var current = GetComponent<AnchoredJoint2D> ();
         for (int i = chainLength; i >= 0; i--) {
             bones[i] = current;
             bonesT[i] = current.transform;
@@ -61,9 +64,14 @@ public class Hinge2DIkSolver : MonoBehaviour {
                 bonesLength[i] = dir.magnitude;
                 completeLength += bonesLength[i];
             }
-            current = current.connectedBody.GetComponent<HingeJoint2D> ();
+            current = current.connectedBody.GetComponent<AnchoredJoint2D> ();
         }
         root = bones[0].connectedBody.transform;
+        rootrb = root.GetComponent<Rigidbody2D> ();
+        if (!rootrb) {
+            rootrb = rootrb.GetComponentInParent<Rigidbody2D> ();
+        }
+        Debug.Log (root + " , " + rootrb);
     }
 
     private Vector2 getBonePos (int index) {
@@ -90,6 +98,7 @@ public class Hinge2DIkSolver : MonoBehaviour {
         if (Time.frameCount % updateEveryXFrames == 0) {
             Solve ();
         }
+        ApplyByTorque ();
         ApplyPositions ();
     }
     void Solve () {
@@ -164,6 +173,29 @@ public class Hinge2DIkSolver : MonoBehaviour {
         }
     }
 
+    private void ApplyByTorque () {
+        for (int i = 1; i <= chainLength - 1; i++) {
+            //calculate the direction from anchor to position[i]
+            var dir = (positions[i] - getBonePos (i));
+            var anglea = MathHelper.AngleBetween (positions[i], root.position);
+            var angleb = MathHelper.AngleBetween (getBonePos (i), root.position);
+            var angle = Mathf.DeltaAngle (anglea, angleb);
+
+            var x = angle > 0 ? 1 : -1;
+            angle = Mathf.Abs (angle * .05f);
+            angle = Mathf.Clamp (angle, 0, 1);
+
+            var vel = bonesR[i - 1].angularVelocity;
+            rootrb.AddTorque (vel * 0.25f * reflectionForce);
+            bonesR[i - 1].AddTorque (-vel * 0.25f * reflectionForce);
+
+            var a = (chainLength + 2 - i);
+            var index = chainLength - i + 1;
+            var f = 1;
+            rootrb.AddTorque (angle * force * x * f * 0.2f);
+            bonesR[i - 1].AddTorque (-angle * force * x * f * 0.2f);
+        }
+    }
     private void ApplyPositions () {
         // well this method just doing one thing
         // its trying to set our transform position into the positions we calculated 
@@ -173,6 +205,11 @@ public class Hinge2DIkSolver : MonoBehaviour {
         // would not work at all, in this case i calculate the "direction" that the anchor should move toward position[i]
         // and just add that force to our transform (it would also move the anchor so we get what we wanted)
         // also that would automatically rotate the transform as its all done via the rigidbodies physics.
+
+        Vector2 vel = Vector2.zero;
+        float n = 1 / rootrb.velocity.magnitude;
+        n = Mathf.Clamp01 (n);
+        //Debug.Log (n + " ," + rootrb.velocity.magnitude);
         for (int i = 0; i <= chainLength; i++) {
             //calculate the direction from anchor to position[i]
             var dir = (positions[i] - getBonePos (i));
@@ -182,37 +219,59 @@ public class Hinge2DIkSolver : MonoBehaviour {
             // each frame we would reduce the velocity of the bone by magnitude of (force * 90%)
             // that way we get "semi" realistic moving parts that would still get effected by physics in the right way,
             // ( possibly would have problems with gravity(gravity would be to slow) )
-            if (cmag > force) {
-                // if the velocity is to high, we would want to slow it by factor of force.
-                bonesR[i].velocity *= 1f - (mag / cmag) * 0.9f;
-            } else {
-                bonesR[i].velocity *= 0.1f;
-            }
-            float relativeForce = Mathf.Log (chainLength - i + 10);
-            //Debug.Log (relativeForce + " ,  i : " + i);
-            bonesR[i].AddForce (dir * force);
+            // if (cmag > force * 0.01f) {
+            //     // if the velocity is to high, we would want to slow it by factor of force.
+            //     var f = (mag / cmag) * reflectionForce;
+            //     var velr = bonesR[i].velocity * f;
+            //     rootrb.AddForce (velr, ForceMode2D.Impulse);
+            //     bonesR[i].AddForce (-bonesR[i].velocity * f, ForceMode2D.Impulse);
+            //     Debug.Log (velr);
+            //     //vel += (bonesR[i].velocity * (1 - f));
+            //     //bonesR[i].velocity *= f;
+            // } else {
+            //     //vel += (bonesR[i].velocity * 0.9f);
+            //     var velr = bonesR[i].velocity * 0.9f;
+            //     rootrb.AddForce (velr * reflectionForce, ForceMode2D.Impulse);
+            //     //Debug.Log (-bonesR[i].velocity * 0.9f + " , " + velr);
+            //     bonesR[i].AddForce (-velr * reflectionForce, ForceMode2D.Impulse);
+            //     //bonesR[i].velocity *= 0.1f;
+            // }
+
+            var velr = bonesR[i].velocity * n * 0.5f;
+            rootrb.AddForce (velr * reflectionForce, ForceMode2D.Impulse);
+            bonesR[i].AddForce (-velr * reflectionForce, ForceMode2D.Impulse);
+
+            //bonesR[i].velocity *= 0.1f;
+            //Debug.Log (reflectionForce);
+            float relativeForce = Mathf.Log10 (chainLength - i + 10) * force;
+            //Debug.Log (relativeForce);
+
+            var fr = force * (chainLength + 2 - i);
+            bonesR[i].AddForce (dir * relativeForce);
+            rootrb.AddForce (-dir * relativeForce);
         }
+        //rootrb.velocity += vel * Time.deltaTime;
     }
 
 #if UNITY_EDITOR
+    public float gsize = 0.1f;
     private void OnDrawGizmos () {
         if (!drawGizmos)
             return;
         Gizmos.color = Color.white;
-        Gizmos.DrawSphere (transform.position, 0.2f);
         try {
             if (bones != null) {
                 Random.InitState (10);
                 // draw the anchors
                 for (int i = 0; i < bones.Length; i++) {
                     PlainMath.NextGizmosColor ();
-                    Gizmos.DrawSphere (getBonePos (i), 0.25f);
+                    Gizmos.DrawSphere (getBonePos (i), gsize);
                 }
 
                 // draw the desired anchor position
                 for (int i = 0; i < chainLength + 1; i++) {
                     Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere (positions[i], 0.25f);
+                    Gizmos.DrawSphere (positions[i], gsize);
                 }
             }
         } catch {

@@ -11,7 +11,6 @@ public class CollisionManager : MonoBehaviour {
             for (int j = i + 1; j < colliders.Length; j++) {
                 Physics2D.IgnoreCollision (colliders[i], colliders[j], true);
             }
-            Debug.Log (colliders[i].transform.name);
         }
     }
 }
