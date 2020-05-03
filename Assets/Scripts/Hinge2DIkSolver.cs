@@ -98,8 +98,9 @@ public class Hinge2DIkSolver : MonoBehaviour {
         if (Time.frameCount % updateEveryXFrames == 0) {
             Solve ();
         }
-        ApplyByTorque ();
+        //ApplyByTorque ();
         ApplyPositions ();
+        ApplyByTorque ();
     }
     void Solve () {
         if (target == null)
@@ -174,6 +175,8 @@ public class Hinge2DIkSolver : MonoBehaviour {
     }
 
     private void ApplyByTorque () {
+        if (rootrb.velocity.sqrMagnitude > 4)
+            return;
         for (int i = 1; i <= chainLength - 1; i++) {
             //calculate the direction from anchor to position[i]
             var dir = (positions[i] - getBonePos (i));
@@ -184,6 +187,7 @@ public class Hinge2DIkSolver : MonoBehaviour {
             var x = angle > 0 ? 1 : -1;
             angle = Mathf.Abs (angle * .05f);
             angle = Mathf.Clamp (angle, 0, 1);
+            angle = Mathf.Pow (3, angle) - 1;
 
             var vel = bonesR[i - 1].angularVelocity;
             rootrb.AddTorque (vel * 0.25f * reflectionForce);
@@ -196,6 +200,8 @@ public class Hinge2DIkSolver : MonoBehaviour {
             bonesR[i - 1].AddTorque (-angle * force * x * f * 0.2f);
         }
     }
+
+    private float vn = 1;
     private void ApplyPositions () {
         // well this method just doing one thing
         // its trying to set our transform position into the positions we calculated 
@@ -209,6 +215,7 @@ public class Hinge2DIkSolver : MonoBehaviour {
         Vector2 vel = Vector2.zero;
         float n = 1 / rootrb.velocity.magnitude;
         n = Mathf.Clamp01 (n);
+        vn = n * 0.1f + vn * 0.9f;
         //Debug.Log (n + " ," + rootrb.velocity.magnitude);
         for (int i = 0; i <= chainLength; i++) {
             //calculate the direction from anchor to position[i]
@@ -237,7 +244,7 @@ public class Hinge2DIkSolver : MonoBehaviour {
             //     //bonesR[i].velocity *= 0.1f;
             // }
 
-            var velr = bonesR[i].velocity * n * 0.5f;
+            var velr = bonesR[i].velocity * vn * 0.5f;
             rootrb.AddForce (velr * reflectionForce, ForceMode2D.Impulse);
             bonesR[i].AddForce (-velr * reflectionForce, ForceMode2D.Impulse);
 
@@ -247,8 +254,8 @@ public class Hinge2DIkSolver : MonoBehaviour {
             //Debug.Log (relativeForce);
 
             var fr = force * (chainLength + 2 - i);
-            bonesR[i].AddForce (dir * relativeForce);
-            rootrb.AddForce (-dir * relativeForce);
+            bonesR[i].AddForce (dir * relativeForce * (vn + 1f) * 0.5f);
+            rootrb.AddForce (-dir * relativeForce * (vn + 1f) * 0.5f);
         }
         //rootrb.velocity += vel * Time.deltaTime;
     }
