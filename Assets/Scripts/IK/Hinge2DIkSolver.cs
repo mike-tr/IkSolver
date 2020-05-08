@@ -28,7 +28,6 @@ public class Hinge2DIkSolver : MonoBehaviour
     }
     public float delta = 0.25f;
     public int iterations = 10;
-    public float poleMinDistance = 1;
     public float SnapStrength = 1f;
     public int updateEveryXFrames = 5;
     public bool drawGizmos = true;
@@ -46,6 +45,8 @@ public class Hinge2DIkSolver : MonoBehaviour
     private float completeLength = 0;
     private Transform root;
     private Rigidbody2D rootrb;
+
+    public bool active = true;
     // Start is called before the first frame update
     void Start()
     {
@@ -91,8 +92,8 @@ public class Hinge2DIkSolver : MonoBehaviour
 
         for (int i = 1; i <= chainLength; i++)
         {
-            avAngles[i - 1] = MathHelper.AngleBetween(getBonePos(i), root.position);
-            angleOffset[i - 1] = AngleFromDirection(getBonePosVR2(i - 1) - getBonePosVR2(i)) - root.eulerAngles.z;
+            avAngles[i - 1] = PlainMath.AngleBetween(getBonePos(i), root.position);
+            angleOffset[i - 1] = PlainMath.AngleFromDirection(getBonePosVR2(i - 1) - getBonePosVR2(i)) - root.eulerAngles.z;
             Debug.Log(angleOffset[i - 1] + " , " + bonesT[i].name + "  ::  " + root.eulerAngles.z + " :: " + bonesT[i].eulerAngles.z);
             //Debug.Log(AngleFromDirection((Vector2)root.position - getBonePos(i)) + " , " + bonesT[i].na);
         }
@@ -110,12 +111,6 @@ public class Hinge2DIkSolver : MonoBehaviour
         // get the position iof the anchor in world pos
         return bones[index].anchor + (Vector2)bonesT[index].position;
     }
-    private Vector2 getBonePosVR(int index)
-    {
-        // get the position iof the anchor in world pos
-        return bonesT[index].rotation * bones[index].anchor + bonesT[index].position;
-    }
-
     private Vector2 BonePosToPos(int index, Vector2 pos)
     {
         // convert anchor world pos, to anchor.transform world pos.
@@ -123,29 +118,21 @@ public class Hinge2DIkSolver : MonoBehaviour
     }
     private void LateUpdate()
     {
-        // System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch ();
-        // sw.Start ();
-        // for (int i = 0; i < 10000; i++) {
-        //     Solve ();
-        // }
-
-        // sw.Stop ();
-        // Debug.Log ("time per 10k iterations : " + sw.ElapsedMilliseconds);
-        // // the Ik solver
-
         //basically nothing would really change every frame so wh
         if (Time.frameCount % updateEveryXFrames == 0)
         {
             Solve();
         }
-
-        //ApplyByTorque();
     }
 
+    int n = 0;
     private void FixedUpdate()
     {
-        ApplyByTorque();
-        ApplyPositions();
+        if (active)
+        {
+            ApplyByTorque();
+            ApplyPositions();
+        }
     }
     void Solve()
     {
@@ -223,7 +210,7 @@ public class Hinge2DIkSolver : MonoBehaviour
                     // also we dont wanna flip anything if the pole to the center, reason being,
                     // we will get to much flipping (in one frame the position is the same direciton as us, and the other frame its
                     // the opposide derection)
-                    if (ptoCenter.sqrMagnitude > poleMinDistance && Vector2.Dot(ttoCenter, ptoCenter) < 0)
+                    if (Vector2.Dot(ttoCenter, ptoCenter) < 0)
                     {
                         positions[i] = closest + ttoCenter;
                     }
@@ -237,12 +224,12 @@ public class Hinge2DIkSolver : MonoBehaviour
     const float tc = 0.05f;
     private void ApplyByTorque()
     {
-        float vmd = 5 / rootrb.velocity.sqrMagnitude;
+        float vmd = 10 / rootrb.velocity.sqrMagnitude;
         vmd = Mathf.Clamp01(vmd);
         var fxs50 = 25 * Time.fixedDeltaTime;
         for (int i = 1; i <= chainLength; i++)
         {
-            var t = AngleFromDirection(positions[i - 1] - positions[i]);
+            var t = PlainMath.AngleFromDirection(positions[i - 1] - positions[i]);
             var angle = -Mathf.DeltaAngle(bonesT[i - 1].eulerAngles.z + angleOffset[i - 1], t);
 
             var x = angle > 0 ? 1 : -1;
@@ -259,23 +246,16 @@ public class Hinge2DIkSolver : MonoBehaviour
             //bonesR[i - 1].angularVelocity = 0;
 
             var rv2 = vel * fxs50 * reflectionForce * vmd;
+            rv2 = Mathf.Clamp(rv2, -force * 0.2f, force * 0.2f);
             rootrb.AddTorque(rv2);
             bonesR[i - 1].AddTorque(-rv2);
 
-            var aaf = Mathf.Log10((chainLength - i) * 10 + 10) * vmd;
-            var f = angle * x * force * torqueStrength * aaf * fxs50 * 2;
+            var aaf = Mathf.Log10((chainLength - i) * 10 + 10);
+            var f = angle * x * force * torqueStrength * aaf * fxs50 * 6;
             //f = Mathf.Clamp(f, -270, 270);
             rootrb.AddTorque(f);
             bonesR[i - 1].AddTorque(-f);
         }
-    }
-
-    private float AngleFromDirection(Vector2 dir)
-    {
-        //Get the angle by using some Acos on x, flipping the rotation when y is lower then 0.
-        dir = dir.normalized;
-        var angle = Mathf.Acos(dir.x) * Mathf.Rad2Deg;
-        return dir.y > 0 ? angle : 360 - angle;
     }
 
     private float vn = 1;
@@ -291,7 +271,7 @@ public class Hinge2DIkSolver : MonoBehaviour
         // also that would automatically rotate the transform as its all done via the rigidbodies physics.
 
         Vector2 vel = Vector2.zero;
-        float n = 1 / rootrb.velocity.magnitude;
+        float n = 10 / rootrb.velocity.magnitude;
         n = Mathf.Clamp01(n);
         vn = n * 0.1f + vn * 0.9f;
 
@@ -305,12 +285,16 @@ public class Hinge2DIkSolver : MonoBehaviour
             var cmag = bonesR[i].velocity.magnitude;
 
             var velr = bonesR[i].velocity * vn * fxs50;
+            if (velr.sqrMagnitude > force * force * 0.25f)
+            {
+                velr = velr.normalized * force * 0.5f;
+            }
 
-            rootrb.AddForce(velr * reflectionForce * vn, ForceMode2D.Impulse);
-            bonesR[i].AddForce(-velr * reflectionForce * vn, ForceMode2D.Impulse);
+            rootrb.AddForce(velr * reflectionForce, ForceMode2D.Impulse);
+            bonesR[i].AddForce(-velr * reflectionForce, ForceMode2D.Impulse);
             float relativeForce = Mathf.Log10(chainLength - i + 10) * force;
 
-            var aaf = Mathf.Log10((chainLength - i) * 10 + 10) * force * 4 * fxs50;
+            var aaf = Mathf.Log10((chainLength - i) * 10 + 10) * force * 6 * fxs50;
             bonesR[i].AddForce(dir * aaf * vn);
             rootrb.AddForce(-dir * aaf * vn);
         }
