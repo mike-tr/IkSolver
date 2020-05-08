@@ -497,6 +497,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &84592965
 GameObject:
@@ -817,6 +818,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &209487591
 GameObject:
@@ -927,6 +929,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1001 &248301557
 PrefabInstance:
@@ -978,7 +981,7 @@ PrefabInstance:
     - target: {fileID: 2225495717236063545, guid: 5945f39aa1c3926458a314843577cd43,
         type: 3}
       propertyPath: m_Constraints
-      value: 0
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2225495717484949362, guid: 5945f39aa1c3926458a314843577cd43,
         type: 3}
@@ -1383,6 +1386,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 0.2
   gsize: 0.1
 --- !u!1 &528174507
 GameObject:
@@ -1484,6 +1488,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 0.2
   gsize: 0.1
 --- !u!1 &535317474
 GameObject:
@@ -1594,6 +1599,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 0.2
   gsize: 0.1
 --- !u!1 &682362157
 GameObject:
@@ -1650,6 +1656,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!233 &682362160
 HingeJoint2D:
@@ -2180,6 +2187,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!233 &945108138
 HingeJoint2D:
@@ -2326,6 +2334,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &1116760722 stripped
 GameObject:
@@ -2355,6 +2364,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!50 &1162398683 stripped
 Rigidbody2D:
@@ -2417,6 +2427,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 0.2
   gsize: 0.1
 --- !u!233 &1191310752
 HingeJoint2D:
@@ -2563,6 +2574,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &1268400813
 GameObject:
@@ -2883,6 +2895,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!233 &1387566239
 HingeJoint2D:
@@ -2975,6 +2988,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &1446987849 stripped
 GameObject:
@@ -3054,6 +3068,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &1632703765
 GameObject:
@@ -3203,6 +3218,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!233 &1727371958
 HingeJoint2D:
@@ -3277,6 +3293,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!1 &1887788086 stripped
 GameObject:
@@ -3396,6 +3413,7 @@ MonoBehaviour:
   SnapStrength: 1
   updateEveryXFrames: 5
   drawGizmos: 1
+  torqueStrength: 1
   gsize: 0.1
 --- !u!4 &2031502358 stripped
 Transform:

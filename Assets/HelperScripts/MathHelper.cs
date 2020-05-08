@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class MathHelper{
+public static class MathHelper
+{
 
     public static Vector2 RadianToVector2(float radian)
     {
@@ -14,6 +15,14 @@ public static class MathHelper{
         A -= B;
         float angle = Mathf.Atan2(A.y, A.x);
         return angle * Mathf.Rad2Deg;
+    }
+
+    public static float AngleFromDirection(Vector2 dir)
+    {
+        //Get the angle by using some Acos on x, flipping the rotation when y is lower then 0.
+        dir = dir.normalized;
+        var angle = Mathf.Acos(dir.x) * Mathf.Rad2Deg;
+        return dir.y > 0 ? angle : 360 - angle;
     }
 
     public static Vector2 RadianToVector2(float radian, float length)
@@ -64,7 +73,7 @@ public static class MathHelper{
 
     public static float Sigmoid(float x)
     {
-        return 1 / (1 + Mathf.Exp(-x)); 
+        return 1 / (1 + Mathf.Exp(-x));
     }
 
     public static float FakeDSigmoid(float y)
