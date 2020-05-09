@@ -2,7 +2,7 @@
 
 public class Hinge2DIkSolver : MonoBehaviour
 {
-    public static float reflectionForce = 1f;
+    public static float reflectionForce = 0.5f;
     public Transform target;
     public Transform pole;
     public int chainLength = 2;
