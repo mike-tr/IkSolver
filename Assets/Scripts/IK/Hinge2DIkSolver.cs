@@ -51,6 +51,7 @@ public class Hinge2DIkSolver : MonoBehaviour
     void Start()
     {
         init();
+        Solve();
     }
 
     void init()
@@ -119,7 +120,7 @@ public class Hinge2DIkSolver : MonoBehaviour
     private void LateUpdate()
     {
         //basically nothing would really change every frame so wh
-        if (Time.frameCount % updateEveryXFrames == 0)
+        if (active && Time.frameCount % updateEveryXFrames == 0)
         {
             Solve();
         }
